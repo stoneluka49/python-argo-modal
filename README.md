@@ -17,7 +17,8 @@
 - **NEZHA_SERVER** = 哪吒 agent 域名，v1为 域名:端口  // 可选
 - **NEZHA_KEY** = 哪吒 agent 的 key                  // 可选
 - **NEZHA_PORT** = 哪吒 agent 的 端口，仅v0需要       // 可选
-- **CFIP** = cf.090227.xyz                          // 优选域名，可选，不填则使用默认
+- **CFIP** = cf.090227.xyz                          // 优选域名或IP，可选，不填则使用默认
+- **CFPORT** = 443                                  // 优选域名或优选IP的端口，可选，不填则使用默认
 - **BOT_TOKEN** = TG 机器人 Token                   // 可选
 - **CHAT_ID** = TG 机器人或频道 ID                   // 可选
 
