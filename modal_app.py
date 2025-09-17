@@ -84,23 +84,114 @@ async def lifespan(app_instance: FastAPI):
     CHAT_ID = os.environ.get('CHAT_ID') or ''
     
     # 启动后台进程
-    config_json_path = "/root/.cache/config.json"
-    config_data = {"log": {"access": "/dev/null", "error": "/dev/null", "loglevel": "none"},"inbounds": [{"port": ARGO_PORT, "protocol": "vless", "settings": {"clients": [{"id": UUID}], "decryption": "none", "fallbacks": [{"dest": 3001},{"path": "/vless-argo", "dest": 3002},{"path": "/vmess-argo", "dest": 3003},{"path": "/trojan-argo", "dest": 3004},]},"streamSettings": {"network": "tcp"},},{"port": 3001, "listen": "127.0.0.1", "protocol": "vless", "settings": {"clients": [{"id": UUID}], "decryption": "none"}, "streamSettings": {"network": "ws", "security": "none"}},{"port": 3002, "listen": "127.0.0.1", "protocol": "vless", "settings": {"clients": [{"id": UUID, "level": 0}], "decryption": "none"}, "streamSettings": {"network": "ws", "security": "none", "wsSettings": {"path": "/vless-argo"}}},{"port": 3003, "listen": "127.0.0.1", "protocol": "vmess", "settings": {"clients": [{"id": UUID, "alterId": 0}]}, "streamSettings": {"network": "ws", "wsSettings": {"path": "/vmess-argo"}}},{"port": 3004, "listen": "127.0.0.1", "protocol": "trojan", "settings": {"clients": [{"password": UUID}]}, "streamSettings": {"network": "ws", "security": "none", "wsSettings": {"path": "/trojan-argo"}}},],"outbounds": [{"protocol": "freedom", "tag": "direct"}, {"protocol": "blackhole", "tag": "block"}]}
+    config_json_path = "/root/.tmp/config.json"
+    config_data = {
+            "log": {
+                "access": "/dev/null",
+                "error": "/dev/null",
+                "loglevel": "none"
+            },
+            "inbounds": [
+                {
+                    "port": ARGO_PORT,
+                    "protocol": "vless",
+                    "settings": {
+                        "clients": [{"id": UUID}],
+                        "decryption": "none",
+                        "fallbacks": [
+                            {"dest": 3001},
+                            {"path": "/vless-argo", "dest": 3002},
+                            {"path": "/vmess-argo", "dest": 3003},
+                            {"path": "/trojan-argo", "dest": 3004},
+                        ]
+                    },
+                    "streamSettings": {"network": "tcp"}
+                },
+                {
+                    "port": 3001,
+                    "listen": "127.0.0.1",
+                    "protocol": "vless",
+                    "settings": {
+                        "clients": [{"id": UUID}],
+                        "decryption": "none"
+                    },
+                    "streamSettings": {
+                        "network": "ws",
+                        "security": "none"
+                    }
+                },
+                {
+                    "port": 3002,
+                    "listen": "127.0.0.1",
+                    "protocol": "vless",
+                    "settings": {
+                        "clients": [{"id": UUID, "level": 0}],
+                        "decryption": "none"
+                    },
+                    "streamSettings": {
+                        "network": "ws",
+                        "security": "none",
+                        "wsSettings": {"path": "/vless-argo"}
+                    }
+                },
+                {
+                    "port": 3003,
+                    "listen": "127.0.0.1",
+                    "protocol": "vmess",
+                    "settings": {
+                        "clients": [{"id": UUID, "alterId": 0}]
+                    },
+                    "streamSettings": {
+                        "network": "ws",
+                        "wsSettings": {"path": "/vmess-argo"}
+                    }
+                },
+                {
+                    "port": 3004,
+                    "listen": "127.0.0.1",
+                    "protocol": "trojan",
+                    "settings": {
+                        "clients": [{"password": UUID}]
+                    },
+                    "streamSettings": {
+                        "network": "ws",
+                        "security": "none",
+                        "wsSettings": {"path": "/trojan-argo"}
+                    }
+                }
+            ],
+            "outbounds": [
+                {"protocol": "freedom", "tag": "direct"},
+                {"protocol": "blackhole", "tag": "block"}
+            ]
+        }
+
     with open(config_json_path, 'w') as f: json.dump(config_data, f)
     subprocess.Popen(["/root/.tmp/web", "-c", config_json_path])
-    print(f"✅ 'web' 进程已启动。")
+    print(f"✅ Xr-ay 'web' 进程已启动。")
 
     domain_for_links = ""
-    argo_log_path = "/root/.cache/argo.log"
+    argo_log_path = "/root/.tmp/argo.log"
     if ARGO_DOMAIN and ARGO_AUTH:
         domain_for_links = ARGO_DOMAIN
         if re.match(r'^[A-Z0-9a-z=]{120,250}$', ARGO_AUTH):
             argo_args = f"tunnel --edge-ip-version auto --no-autoupdate run --token {ARGO_AUTH}"
         elif "TunnelSecret" in ARGO_AUTH:
-            tunnel_json_path = "/root/.cache/tunnel.json"; tunnel_yml_path = "/root/.cache/tunnel.yml"
+            tunnel_json_path = "/root/.tmp/tunnel.json"; tunnel_yml_path = "/root/.tmp/tunnel.yml"
             with open(tunnel_json_path, 'w') as f: f.write(ARGO_AUTH)
             tunnel_id = json.loads(ARGO_AUTH)['TunnelID']
-            tunnel_yml_content = f"tunnel: {tunnel_id}\ncredentials-file: {tunnel_json_path}\n\ningress:\n  - hostname: {ARGO_DOMAIN}\n    service: http://localhost:{ARGO_PORT}\n  - service: http_status:404"
+            tunnel_yml_content = f"""
+tunnel: {tunnel_id}
+credentials-file: {tunnel_json_path}
+protocol: http2
+
+ingress:
+  - hostname: {ARGO_DOMAIN}
+    service: http://localhost:{ARGO_PORT}
+    originRequest:
+      noTLSVerify: true
+  - service: http_status:404
+"""
             with open(tunnel_yml_path, 'w') as f: f.write(tunnel_yml_content)
             argo_args = f"tunnel --edge-ip-version auto --config {tunnel_yml_path} run"
         else: raise ValueError("ARGO_AUTH格式无效")
@@ -124,9 +215,28 @@ async def lifespan(app_instance: FastAPI):
             tls_ports = ['443', '8443', '2096', '2087', '2083', '2053']; nezha_tls = '--tls' if NEZHA_PORT in tls_ports else ''
             nezha_cmd = f"/root/.tmp/npm -s {NEZHA_SERVER}:{NEZHA_PORT} -p {NEZHA_KEY} {nezha_tls}"; subprocess.Popen(nezha_cmd, shell=True); print("✅ Nezha v0 agent ('npm') 已启动。")
         else:
-            config_yaml_path = "/root/.cache/config.yaml"
+            config_yaml_path = "/root/.tmp/config.yaml"
             nezha_port_str = NEZHA_SERVER.split(":")[-1]; nezha_tls = "true" if nezha_port_str in ["443", "8443", "2096", "2087", "2083", "2053"] else "false"
-            config_yaml_data = f"client_secret: {NEZHA_KEY}\ndebug: false\nserver: {NEZHA_SERVER}\ntls: {nezha_tls}\nuuid: {UUID}"
+            config_yaml_data = f"""
+client_secret: {NEZHA_KEY}
+debug: false
+disable_auto_update: true
+disable_command_execute: false
+disable_force_update: true
+disable_nat: false
+disable_send_query: false
+gpu: false
+insecure_tls: false
+ip_report_period: 1800
+report_delay: 4
+server: {NEZHA_SERVER}
+skip_connection_count: false
+skip_procs_count: false
+temperature: false
+tls: {nezha_tls}
+use_gitee_to_upgrade: false
+use_ipv6_country_code: false
+uuid: {UUID}"""
             with open(config_yaml_path, 'w') as f: f.write(config_yaml_data)
             subprocess.Popen(["/root/.tmp/php", "-c", config_yaml_path]); print("✅ Nezha v1 agent ('php') 已启动。")
 
@@ -186,4 +296,5 @@ def web_server():
             return Response(content=f"读取订阅时发生错误: {e}", status_code=500, media_type="text/plain; charset=utf-8")
     
     return fastapi_app
+
 
