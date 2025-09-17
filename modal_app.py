@@ -200,7 +200,7 @@ ingress:
     else:
         argo_args = f"tunnel --edge-ip-version auto --url http://localhost:{ARGO_PORT}"
         subprocess.Popen(f"/root/.tmp/bot {argo_args} > {argo_log_path} 2>&1", shell=True)
-        time.sleep(8)
+        time.sleep(10)
         try:
             with open(argo_log_path, 'r') as f: log_content = f.read()
             match = re.search(r"https?://\S+\.trycloudflare\.com", log_content)
@@ -296,5 +296,6 @@ def web_server():
             return Response(content=f"读取订阅时发生错误: {e}", status_code=500, media_type="text/plain; charset=utf-8")
     
     return fastapi_app
+
 
 
