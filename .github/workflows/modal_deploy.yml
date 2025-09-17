@@ -1,10 +1,12 @@
 name: Deploy to Modal
 
 on:
-  # push:
-  #   branches:
-  #     - main
   workflow_dispatch:
+  #schedule:
+  #  - cron: '0 18 * * *' # 每天凌晨2点（北京时间）
+  # 当 Uptime Kuma API 发送 'service-down-alert' 事件时触发此工作流。
+  repository_dispatch:
+    types: [service-down-alert]
 
 jobs:
   deploy:
@@ -15,6 +17,18 @@ jobs:
       SERVER_PORT: ${{ secrets.SERVER_PORT || 3000 }}
       
     steps:
+      - name: Check Trigger Event
+        run: |
+          echo "Workflow triggered by: ${{ github.event_name }}"
+          if [[ "${{ github.event_name }}" == "repository_dispatch" ]]; then
+            echo "触发事件类型 (Event Type): ${{ github.event.action }}"
+            echo "收到来自 Uptime Kuma 的下线通知，开始执行自动恢复部署流程..."
+          elif [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            echo "工作流被手动触发，开始执行部署..."
+          else
+            echo "工作流由计划任务触发，开始执行部署..."
+          fi
+          
       # 1. 检出代码
       - name: Checkout repository
         uses: actions/checkout@v4
