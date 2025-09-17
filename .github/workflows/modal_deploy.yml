@@ -14,6 +14,7 @@ jobs:
     env:
       MODAL_USER_NAME: ${{ secrets.MODAL_USER_NAME }}
       APP_NAME: ${{ secrets.MODAL_APP_NAME || 'proxy-app' }}
+      SUB_PATH: ${{ secrets.SUB_PATH || 'sub' }}
       SERVER_PORT: ${{ secrets.SERVER_PORT || 3000 }}
       
     steps:
@@ -79,3 +80,11 @@ jobs:
       # 7. 部署 Modal 应用
       - name: Deploy to Modal
         run: modal deploy modal_app.py
+
+      - name: Output Deployment URLs
+        run: |
+          echo "✅ 部署成功!"
+          echo "--------------------------------------------------"
+          echo "项目 URL: https://${{ env.MODAL_USER_NAME }}--${{ env.MODAL_APP_NAME }}-web_server.modal.run"
+          echo "订阅 URL: https://${{ env.MODAL_USER_NAME }}--${{ env.MODAL_APP_NAME }}-web_server.modal.run/${{ env.SUB_PATH }}"
+          echo "--------------------------------------------------"
