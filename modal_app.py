@@ -10,7 +10,7 @@ from fastapi import FastAPI, Response
 import modal
 
 # --- 1. 用户可配置常量 ---
-APP_NAME = os.environ.get('MODAL_APP_NAME') or "proxy-app"
+MODAL_APP_NAME = os.environ.get('MODAL_APP_NAME') or "proxy-app"
 MODAL_USER_NAME = os.environ.get('MODAL_USER_NAME') or ""
 
 # --- 2. 定义 Modal 镜像 ---
@@ -296,6 +296,7 @@ def web_server():
             return Response(content=f"读取订阅时发生错误: {e}", status_code=500, media_type="text/plain; charset=utf-8")
     
     return fastapi_app
+
 
 
 
