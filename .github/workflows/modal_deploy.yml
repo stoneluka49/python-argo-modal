@@ -3,8 +3,7 @@ name: Deploy to Modal
 on:
   workflow_dispatch:
   #schedule:
-  #  - cron: '0 18 * * *' # 每天凌晨2点（北京时间）
-  # 当 Uptime Kuma API 发送 'service-down-alert' 事件时触发此工作流。
+  #  - cron: '0 18 * * *'
   repository_dispatch:
     types: [service-down-alert]
 
@@ -30,31 +29,25 @@ jobs:
             echo "工作流由计划任务触发，开始执行部署..."
           fi
           
-      # 1. 检出代码
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # 2. 设置 Python 环境
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
           python-version: '3.11'
 
-      # 3. 安装 Modal 客户端及必要的依赖
-      - name: Install Modal
+      - name: Install Dependencies
         run: pip install modal fastapi requests
 
-      # 4. 认证 Modal
       - name: Authenticate Modal
         run: |
           modal token set --token-id ${{ secrets.MODAL_TOKEN_ID }} --token-secret ${{ secrets.MODAL_TOKEN_SECRET }}
 
-      # 5. 停止任何已存在的同名应用
       - name: Stop Existing App (for clean deploy)
         run: |
-          modal app stop ${{ env.APP_NAME }} || true
+          modal app stop ${{ env.MODAL_APP_NAME }} || true
 
-      # 6. 更新 Modal Secret
       - name: Create or Update Modal Secret
         run: |
           modal secret delete modal-secrets --yes || true
@@ -77,7 +70,6 @@ jobs:
           BOT_TOKEN='${{ secrets.BOT_TOKEN }}' \
           CHAT_ID='${{ secrets.CHAT_ID }}'
 
-      # 7. 部署 Modal 应用
       - name: Deploy to Modal
         run: modal deploy modal_app.py
 
@@ -85,6 +77,7 @@ jobs:
         run: |
           echo "✅ 部署成功!"
           echo "--------------------------------------------------"
+          # 【重要修正】使用 MODAL_APP_NAME 变量
           echo "项目 URL: https://${{ env.MODAL_USER_NAME }}--${{ env.MODAL_APP_NAME }}-web_server.modal.run"
           echo "订阅 URL: https://${{ env.MODAL_USER_NAME }}--${{ env.MODAL_APP_NAME }}-web_server.modal.run/${{ env.SUB_PATH }}"
           echo "--------------------------------------------------"
