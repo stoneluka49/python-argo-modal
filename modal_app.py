@@ -25,7 +25,7 @@ image = modal.Image.debian_slim().pip_install("fastapi", "uvicorn", "requests").
 )
 
 # --- 3. 定义 Modal App 和共享资源 ---
-app = modal.App(APP_NAME, image=image)
+app = modal.App(MODAL_APP_NAME, image=image)
 app_secrets = modal.Secret.from_name("modal-secrets")
 subscription_dict = modal.Dict.from_name("modal-dict-data", create_if_missing=True)
 
@@ -247,7 +247,7 @@ uuid: {UUID}"""
 
     PROJECT_URL = ""
     if MODAL_USER_NAME:
-        modal_url_base = f"{MODAL_USER_NAME}--{APP_NAME}-web_server.modal.run"
+        modal_url_base = f"{MODAL_USER_NAME}--{MODAL_APP_NAME}-web_server.modal.run"
         PROJECT_URL = f"https://{modal_url_base}"
     
     upload_nodes(links_str, UPLOAD_URL, PROJECT_URL, SUB_PATH)
@@ -296,6 +296,7 @@ def web_server():
             return Response(content=f"读取订阅时发生错误: {e}", status_code=500, media_type="text/plain; charset=utf-8")
     
     return fastapi_app
+
 
 
 
