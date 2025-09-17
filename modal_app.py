@@ -151,12 +151,12 @@ async def lifespan(app_instance: FastAPI):
     
     yield
     
-    # --- 应用关闭时 ---
-    print("⏹️ Lifespan shutdown: 正在停止后台服务...")
-    subprocess.run("pkill -f web || true", shell=True)
-    subprocess.run("pkill -f bot || true", shell=True)
-    subprocess.run("pkill -f npm || true", shell=True)
-    subprocess.run("pkill -f php || true", shell=True)
+    # --- 应用关闭时 --- （可选）
+    # print("⏹️ Lifespan shutdown: 正在停止后台服务...")
+    # subprocess.run("pkill -f web || true", shell=True)
+    # subprocess.run("pkill -f bot || true", shell=True)
+    # subprocess.run("pkill -f npm || true", shell=True)
+    # subprocess.run("pkill -f php || true", shell=True)
 
 # --- 6. FastAPI Web 应用定义 ---
 fastapi_app = FastAPI(lifespan=lifespan)
@@ -186,3 +186,4 @@ def web_server():
             return Response(content=f"读取订阅时发生错误: {e}", status_code=500, media_type="text/plain; charset=utf-8")
     
     return fastapi_app
+
