@@ -13,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       MODAL_USER_NAME: ${{ secrets.MODAL_USER_NAME }}
-      APP_NAME: ${{ secrets.MODAL_APP_NAME || 'proxy-app' }}
+      MODAL_APP_NAME: ${{ secrets.MODAL_APP_NAME || 'proxy-app' }}
       SUB_PATH: ${{ secrets.SUB_PATH || 'sub' }}
       SERVER_PORT: ${{ secrets.SERVER_PORT || 3000 }}
       
