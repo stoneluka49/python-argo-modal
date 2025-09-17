@@ -14,7 +14,7 @@ jobs:
       MODAL_USER_NAME: ${{ secrets.MODAL_USER_NAME }}
       MODAL_APP_NAME: ${{ secrets.MODAL_APP_NAME || 'proxy-app' }}
       SUB_PATH: ${{ secrets.SUB_PATH || 'sub' }}
-      SERVER_PORT: ${{ secrets.SERVER_PORT || 3000 }}
+      SERVER_PORT: ${{ secrets.SERVER_PORT || '3000' }}
       
     steps:
       - name: Check Trigger Event
@@ -53,15 +53,15 @@ jobs:
           modal secret delete modal-secrets --yes || true
           
           modal secret create modal-secrets \
-          UUID='${{ secrets.UUID :-'be16536e-5c3c-44bc-8cb7-b7d0ddc3d951' }}' \
+          UUID='${{ secrets.UUID || 'be16536e-5c3c-44bc-8cb7-b7d0ddc3d951' }}' \
           MODAL_USER_NAME='${{ secrets.MODAL_USER_NAME }}' \
           ARGO_DOMAIN='${{ secrets.ARGO_DOMAIN }}' \
           ARGO_AUTH='${{ secrets.ARGO_AUTH }}' \
-          ARGO_PORT='${{ secrets.ARGO_PORT :-'8001' }}' \
-          SUB_PATH='${{ secrets.SUB_PATH :-'sub' }}' \
-          NAME='${{ secrets.NAME :-'Modal' }}' \
-          CFIP='${{ secrets.CFIP :-'www.visa.com.tw' }}' \
-          CFPORT='${{ secrets.CFPORT :-'443' }}' \
+          ARGO_PORT='${{ secrets.ARGO_PORT || '8001' }}' \
+          SUB_PATH='${{ secrets.SUB_PATH || 'sub' }}' \
+          NAME='${{ secrets.NAME || 'Modal' }}' \
+          CFIP='${{ secrets.CFIP || 'www.visa.com.tw' }}' \
+          CFPORT='${{ secrets.CFPORT || '443' }}' \
           NEZHA_SERVER='${{ secrets.NEZHA_SERVER }}' \
           NEZHA_KEY='${{ secrets.NEZHA_KEY }}' \
           NEZHA_PORT='${{ secrets.NEZHA_PORT }}' \
