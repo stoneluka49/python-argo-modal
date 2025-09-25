@@ -77,7 +77,6 @@ jobs:
         run: |
           echo "✅ 部署成功!"
           echo "--------------------------------------------------"
-          # 【重要修正】使用 MODAL_APP_NAME 变量
           echo "项目 URL: https://${{ env.MODAL_USER_NAME }}--${{ env.MODAL_APP_NAME }}-web_server.modal.run"
           echo "订阅 URL: https://${{ env.MODAL_USER_NAME }}--${{ env.MODAL_APP_NAME }}-web_server.modal.run/${{ env.SUB_PATH }}"
           echo "--------------------------------------------------"
